@@ -4,7 +4,7 @@ const vergeRoute = require("./controllerRoute");
 
 
 let app = express();
-let port = 6996;
+let port = process.env.PORT || 6996;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
