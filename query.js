@@ -7,8 +7,9 @@ const queries = {
     last_name,
     state,
     created_at,
+    updated_at,
     is_admin
-  ) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+  ) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
 
   findUserEmail: `
   SELECT * FROM users WHERE email=($1)
@@ -28,8 +29,9 @@ const queries = {
     sender_name,
     sender_note,
     status,
-    created_at
-  ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+    created_at,
+    updated_at
+  ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
 
   findAllParcel: `
     SELECT * FROM parcel 
@@ -44,15 +46,15 @@ const queries = {
   `,
   updateDestination:
     `
-  UPDATE parcel SET destination=($1), user_id=($2) WHERE id=($3) RETURNING *
+  UPDATE parcel SET destination=($1), user_id=($2), updated_at=($3) WHERE id=($4) RETURNING *
   `,
   updateStatus:
     `
-  UPDATE parcel SET status=($1) WHERE id=($2) RETURNING *
+  UPDATE parcel SET status=($1), updated_at=($2) WHERE id=($3) RETURNING *
   `,
   updateLocation:
     `
-  UPDATE parcel SET location=($1) WHERE id=($2) RETURNING *
+  UPDATE parcel SET location=($1), updated_at=($2) WHERE id=($3) RETURNING *
 `,
   getStatus: `
   SELECT * FROM parcel WHERE id=($1)
@@ -60,8 +62,8 @@ const queries = {
   findParcelByUserId: `
     SELECT * FROM parcel WHERE id=($1)
     `,
-  findAdmin: `
-    SELECT is_admin FROM users WHERE id=($1)
+  findSuperAdmin: `
+    SELECT * FROM users WHERE id=($1)
     `,
   getAllParcelByUser: `
   SELECT * FROM parcel WHERE user_id=($1)

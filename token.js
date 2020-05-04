@@ -8,12 +8,12 @@ const saltRounds = 10;
 const salt = bcrypt.genSaltSync(saltRounds);
 const hashPassword = password => bcrypt.hashSync(password, salt);
 
-const validateEmail = (email) => {
+const validateEmail = email => {
     const regEx = /\S+@\S+\.\S+/;
     return regEx.test(email);
 };
 
-const validatePassword = (password) => {
+const validatePassword = password => {
     if (password.length <= 6) {
         return false;
     } return true;

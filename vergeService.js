@@ -11,7 +11,7 @@ async function createNewUser(body) {
     const hashedPassword = hashPassword(password);
     const queryObj = {
         text: queries.addNewUser,
-        values: [email, hashedPassword, first_name, last_name, state, created_at, is_admin],
+        values: [email, hashedPassword, first_name, last_name, state, created_at, created_at, is_admin],
     };
     try {
         const { rows } = await db.query(queryObj);
@@ -19,12 +19,15 @@ async function createNewUser(body) {
         const tokens = generateToken(result.id, result.email, result.first_name, result.last_name, result.state, result.is_admin);
         const data = {
             token: tokens,
-            result
+            result: {
+                id: result.id,
+                email: result.email
+            }
         }
         return Promise.resolve({
             status: "Success!",
             code: 201,
-            message: "You have successfully signed up", data
+            message: `You have successfully signed up on Verge ${first_name} ${last_name}`, data
         })
     } catch (e) {
         console.log(e);
@@ -44,7 +47,7 @@ async function createNewAdmin(body) {
     const hashedPassword = hashPassword(password);
     const queryObj = {
         text: queries.addNewUser,
-        values: [email, hashedPassword, first_name, last_name, state, created_at, is_admin],
+        values: [email, hashedPassword, first_name, last_name, state, created_at, created_at, is_admin],
     };
     try {
         const { rows } = await db.query(queryObj);
@@ -52,12 +55,15 @@ async function createNewAdmin(body) {
         const tokens = generateToken(result.id, result.email, result.first_name, result.last_name, result.state, result.is_admin);
         const data = {
             token: tokens,
-            result
+            result: {
+                id: result.id,
+                email: result.email
+            }
         }
         return Promise.resolve({
             status: "Success!",
             code: 201,
-            message: "You have successfully signed up", data
+            message: `You have successfully created an admin with name: ${first_name} ${last_name}`, data
         })
     } catch (e) {
         console.log(e);
@@ -143,18 +149,21 @@ async function checkEmailAndPasswordMatch(body) {
             return Promise.reject({
                 status: "error",
                 code: 400,
-                message: "Password is incorrect",
+                message: "Password is incorrect. Remember, password is case sensitive.",
             });
         }
         const tokens = generateToken(result.id, result.email, result.first_name, result.last_name, result.state, result.is_admin);
         const data = {
             token: tokens,
-            result
+            result: {
+                id: result.id,
+                email: result.email
+            }
         }
         return Promise.resolve({
             status: "success",
             code: 202,
-            message: "Log in successful. Welcome!", data
+            message: `Log in successful. Welcome!`, data
         })
     } catch (e) {
         console.log(e);
@@ -173,7 +182,7 @@ async function createNewParcel(user_id, body) {
     const { price, weight, location, destination, sender_name, sender_note } = body;
     const queryObj = {
         text: queries.addParcel,
-        values: [user_id, price, weight, location, destination, sender_name, sender_note, status, created_at],
+        values: [user_id, price, weight, location, destination, sender_name, sender_note, status, created_at, created_at],
     };
     try {
         const { rowCount } = await db.query(queryObj);
@@ -188,7 +197,7 @@ async function createNewParcel(user_id, body) {
             return Promise.resolve({
                 status: "success",
                 code: 201,
-                message: "Parcel order created successfully",
+                message: `Dear ${sender_name}, Your Parcel order has been created successfully`,
             });
         }
     } catch (e) {
@@ -202,10 +211,12 @@ async function createNewParcel(user_id, body) {
 }
 
 async function changeOrderStatus(id, body) {
+    const date = new Date();
+    const updated_at = moment(date).format("YYYY-MM-DD HH:mm:ss");
     const { status } = body
     const queryObj = {
         text: queries.updateStatus,
-        values: [status, id]
+        values: [status, updated_at, id]
     }
     try {
         const { rowCount } = await db.query(queryObj);
@@ -260,10 +271,12 @@ async function checkStatus(id) {
 }
 
 async function updateOrderDestination(user_id, id, body) {
+    const date = new Date();
+    const updated_at = moment(date).format("YYYY-MM-DD HH:mm:ss");
     const { destination } = body
     const queryObj = {
         text: queries.updateDestination,
-        values: [destination, user_id, id]
+        values: [destination, user_id, updated_at, id]
     }
     try {
         const { rowCount } = await db.query(queryObj);
@@ -293,10 +306,12 @@ async function updateOrderDestination(user_id, id, body) {
 }
 
 async function updateOrderLocation(id, body) {
+    const date = new Date();
+    const updated_at = moment(date).format("YYYY-MM-DD HH:mm:ss");
     const { location } = body
     const queryObj = {
         text: queries.updateLocation,
-        values: [location, id]
+        values: [location, updated_at, id]
     }
     try {
         const { rowCount } = await db.query(queryObj);
@@ -343,7 +358,7 @@ async function deleteParcel(id) {
             return Promise.resolve({
                 status: "success",
                 code: 200,
-                message: "Parcel delivery order successfully deleted",
+                message: "Parcel delivery order has been successfully deleted"
             });
         }
     } catch (e) {
@@ -355,15 +370,15 @@ async function deleteParcel(id) {
     }
 }
 
-async function getUserId(id) {
+async function getUserStatusById(id) {
     const queryObj = {
         text: queries.findParcelByUserId,
         values: [id]
     };
     try {
         const { rows } = await db.query(queryObj);
-        console.log(rows[0]);
         if (rows[0].status === "pending") {
+            console.log(rows[0].user_id);
             return Promise.resolve();
         }
         if (rows[0].status !== "pending") {
@@ -382,29 +397,59 @@ async function getUserId(id) {
     }
 }
 
-async function checkAdmin(id) {
+async function getUserId(id) {
     const queryObj = {
-        text: queries.findAdmin,
+        text: queries.getStatus,
         values: [id]
     };
     try {
         const { rows } = await db.query(queryObj);
-        console.log(rows[0]);
-        if (rows[0].is_admin === true) {
-            return Promise.resolve();
-        }
-        if (rows[0].is_admin === false) {
-            return Promise.reject({
-                status: "error",
-                code: 401,
-                message: "Unauthorised. You're not an admin"
-            });
-        }
+        if (rows[0].user_id) {
+            const result = rows[0].user_id;
+            // console.log(result);
+            return result;
+        } 
     } catch (e) {
         return Promise.reject({
             status: "error",
             code: 500,
-            message: "Error finding admin status",
+            message: "Error finding user",
+        });
+    }
+}
+
+async function checkSuperAdmin(id) {
+    const queryObj = {
+        text: queries.findSuperAdmin,
+        values: [id]
+    };
+    try {
+        const { rowCount, rows } = await db.query(queryObj);
+        if(rowCount === 0 ){
+            return Promise.reject({
+                status: "error",
+                code: 400,
+                message: "No user found"
+            });
+        }
+        if(rowCount > 0){
+            if (rows[0].email === "superAdmin@verge.com" && rows[0].is_admin === true) {
+            return Promise.resolve();
+        }
+        if (rows[0].email !== "superAdmin@verge.com" || rows[0].is_admin === false) {
+            return Promise.reject({
+                status: "error",
+                code: 401,
+                message: "Unauthorised. You're not a super admin"
+            });
+        }
+        }
+        
+    } catch (e) {
+        return Promise.reject({
+            status: "error",
+            code: 500,
+            message: "Error finding super admin status",
         });
     }
 }
@@ -480,7 +525,7 @@ async function findUserParcel(id) {
                 status: "success",
                 code: 200,
                 message: "User Parcel Found",
-                data: rows
+                data: rows[0]
             });
         }
     } catch (e) {
@@ -505,8 +550,9 @@ module.exports = {
     deleteParcel,
     getAllParcel,
     findUserParcel,
-    getUserId,
-    checkAdmin,
+    getUserStatusById,
+    checkSuperAdmin,
     checkIfUserExistById,
-    getAllParcelByUser
+    getAllParcelByUser,
+    getUserId
 };

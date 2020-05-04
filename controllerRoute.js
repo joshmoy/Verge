@@ -17,17 +17,18 @@ const {
     deleteUserParcel,
     getAllUserParcelsByAdmin,
     getSpecificParcel,
-    getAllUsersParcel
+    getAllUsersParcel,
+    statusValidation
 } = require("./controller");
 
 router.post("/auth/signup", validateUserSignUpCredentials, signUpUser);
-router.post("/auth/signup/admin", validateUserSignUpCredentials, signUpAdmin);
+router.post("/auth/signup/admin", validateUserSignUpCredentials, getDetailsFromToken, signUpAdmin);
 router.post("/auth/login", validateUserLoginCredentials, loginUser);
 router.post("/parcel", validateParcelCredentials, getDetailsFromToken, createNewUserParcel);
-router.put("/parcel/status/change/:id", verifyToken, changeUserOrderStatus);
+router.put("/parcel/status/change/:id", verifyToken, statusValidation, changeUserOrderStatus);
 router.put("/parcel/destination/change/:id", verifyUserToken, getDetailsFromToken, updateUserOrderDestination);
 router.put("/parcel/location/change/:id", verifyToken, updateUserOrderLocation);
-router.delete("/parcel/cancel/:id", validateId, verifyUserToken, deleteUserParcel);
+router.put("/parcel/cancel/:id", validateId, verifyUserToken, deleteUserParcel);
 router.get("/parcel/all", verifyToken, getAllUserParcelsByAdmin);
 router.get("/parcel/:id", validateId, getDetailsFromToken, getSpecificParcel);
 router.get("/parcel", getDetailsFromToken, getAllUsersParcel);
