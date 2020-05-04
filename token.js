@@ -23,7 +23,7 @@ const comparePassword = (hashedPassword, password) => {
     return bcrypt.compareSync(password, hashedPassword)
 }
 
-const generateToken = ( id, email, first_name, last_name, state, is_admin) => {
+const generateToken = (id, email, first_name, last_name, state, is_admin) => {
     const key = process.env.SECRET_KEY;
     const token = jwt.sign({ id, email, first_name, last_name, state, is_admin }, key, { expiresIn: 86400 });
     return token;

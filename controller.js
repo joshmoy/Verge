@@ -92,7 +92,7 @@ const loginUser = async (req, res) => {
     }
 };
 
-const validateParcelCredentials =  (req, res, next) => {
+const validateParcelCredentials = (req, res, next) => {
     const { price, weight, location, destination, sender_name, sender_note } = req.body;
     if (!price || !weight || !location || !destination || !sender_name || !sender_note) {
         return res.status(400).json({
@@ -124,8 +124,8 @@ const changeUserOrderStatus = async (req, res) => {
 };
 
 const statusValidation = async (req, res, next) => {
-    const {status} = req.body;
-    if (status !== "processing" && status !== "shipped" && status !== "delivered"){
+    const { status } = req.body;
+    if (status !== "processing" && status !== "shipped" && status !== "delivered") {
         return res.status(401).json({
             message: `You can not set status to '${status}'. Use 'processing', 'shipped' or 'delivered'.`
         })
@@ -139,16 +139,16 @@ const updateUserOrderDestination = async (req, res) => {
     const first_name = res.locals.user.first_name;
     try {
         const currentUserId = await getUserId(id);
-        if(currentUserId === user_id){
+        if (currentUserId === user_id) {
             await checkStatus(id);
-        const result = await updateOrderDestination(user_id, id, req.body);
-        return res.status(200).json(result);
+            const result = await updateOrderDestination(user_id, id, req.body);
+            return res.status(200).json(result);
         }
-        if(currentUserId !== user_id){
+        if (currentUserId !== user_id) {
             return res.status(401).json({
                 message: `Dear ${first_name}, You can only update destination of an order created by you`,
             });
-        }        
+        }
     } catch (e) {
         return res.status(e.code).json(e)
     }
@@ -181,16 +181,16 @@ const deleteUserParcel = async (req, res) => {
         const currentUserId = await getUserId(id);
         const user_id = res.locals.user.id;
         const first_name = res.locals.user.first_name;
-        if(currentUserId === user_id){
+        if (currentUserId === user_id) {
             const result = await deleteParcel(id);
             return res.status(200).json(result);
         }
-        if(currentUserId !== user_id){
+        if (currentUserId !== user_id) {
             return res.status(401).json({
                 message: `Dear ${first_name}, You can only delete an order created by you`,
             });
         }
-        
+
     } catch (e) {
         return res.status(e.code).json(e);
     }

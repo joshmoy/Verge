@@ -408,7 +408,7 @@ async function getUserId(id) {
             const result = rows[0].user_id;
             // console.log(result);
             return result;
-        } 
+        }
     } catch (e) {
         return Promise.reject({
             status: "error",
@@ -425,26 +425,26 @@ async function checkSuperAdmin(id) {
     };
     try {
         const { rowCount, rows } = await db.query(queryObj);
-        if(rowCount === 0 ){
+        if (rowCount === 0) {
             return Promise.reject({
                 status: "error",
                 code: 400,
                 message: "No user found"
             });
         }
-        if(rowCount > 0){
+        if (rowCount > 0) {
             if (rows[0].email === "superAdmin@verge.com" && rows[0].is_admin === true) {
-            return Promise.resolve();
+                return Promise.resolve();
+            }
+            if (rows[0].email !== "superAdmin@verge.com" || rows[0].is_admin === false) {
+                return Promise.reject({
+                    status: "error",
+                    code: 401,
+                    message: "Unauthorised. You're not a super admin"
+                });
+            }
         }
-        if (rows[0].email !== "superAdmin@verge.com" || rows[0].is_admin === false) {
-            return Promise.reject({
-                status: "error",
-                code: 401,
-                message: "Unauthorised. You're not a super admin"
-            });
-        }
-        }
-        
+
     } catch (e) {
         return Promise.reject({
             status: "error",
