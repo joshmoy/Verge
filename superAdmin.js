@@ -3,8 +3,6 @@ const queries = require('./query');
 const db = require('./database');
 const { hashPassword, generateToken } = require("./token");
 
-
-
 async function createSuperAdmin(email) {
     const queryObj = {
         text: queries.findUserEmail,
